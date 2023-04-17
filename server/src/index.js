@@ -1,11 +1,12 @@
 //creating server:
 const express = require("express");
 const morgan = require("morgan");
+const bodyParser = require("body-parser");
+
 
 const dev = require("./config");
 const connectDatabase = require("./config/db");
 const userRouter = require("./routes");
-const bodyParser = require("body-parser");
 
 const app = express();
 
