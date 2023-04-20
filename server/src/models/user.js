@@ -43,9 +43,13 @@ const userSchema = new Schema({
         type: Date,
         default: Date.now
     },
-    image: {
-        data: Buffer,
-        contentType: String
+    image:{
+        type: String,
+        default: "../../src/public/images/users/image.JPG"
+    },
+    isBanned:{
+        type: Boolean,
+        default: false
     }
 });
 

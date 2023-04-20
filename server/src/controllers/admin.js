@@ -1,5 +1,7 @@
 const fs = require("fs");
 const jwt = require("jsonwebtoken");
+const excel = require("exceljs");
+
 
 const {securePassword} = require("../helpers/bcryptPassword");
 const User = require("../models/user");
@@ -98,13 +100,99 @@ const getUsersNotAdmin = async(req,res)=>{
             message:error.message
         })
     }
+};
+//Update user:
+const updateUserByAdmin = async (req,res)=>{
+        try {
+           const {id} = req.params;
+           const isUserExist = await User.findById(id);
+           if(!isUserExist){
+               return res.status(404).json({
+                   ok: true,
+                   message: "user is not found"
+               });
+           };
+           // isAdmin or not:
+          await User.findByIdAndDelete(id)
+               
+           res.status(200).json({
+               ok: true,
+               message: "User is successfully deleted"
+           })
+        } catch (error) {
+           res.status(500).json({
+               message:error.message
+           })
+        }
+       }
+//delete user user by admin:
+const deleteUserByAdmin = async (req,res)=>{
+ try {
+    const {id} = req.params;
+    const isUserExist = await User.findById(id);
+    if(!isUserExist){
+        return res.status(404).json({
+            ok: true,
+            message: "user is not found"
+        });
+    };
+    // isAdmin or not:
+   await User.findByIdAndDelete(id)
+        
+    res.status(200).json({
+        ok: true,
+        message: "User is successfully deleted"
+    })
+ } catch (error) {
+    res.status(500).json({
+        message:error.message
+    })
+ }
 }
+//data exported to excel:
+const usersExportedByAdmin = async(req,res)=>{
+    try {
+    const workBook =   new excel.Workbook();
+    const worksheet = workbook.addWorksheet("Users");
 
+worksheet.columns = [
+  { header: "Id", key: "id", width: 5 },
+  { header: "Title", key: "title", width: 25 },
+  { header: "Description", key: "description", width: 25 },
+  { header: "Published", key: "published", width: 10 },
+];
 
+// Add Array Rows
+worksheet.addRows(users);
+
+// res is a Stream object
+res.setHeader(
+  "Content-Type",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+);
+res.setHeader(
+  "Content-Disposition",
+  "attachment; filename=" + "tutorials.xlsx"
+
+);
+res.status(200).json({
+    ok: true,
+    message: "User is successfully deleted"
+})
+        
+    } catch (error) {
+        res.status(500).json({
+            message:error.message
+        })
+    }
+}
 
 module.exports = 
 {
  loginAdmin,
  logoutAdmin,
- getUsersNotAdmin
+ getUsersNotAdmin,
+ updateUserByAdmin,
+ deleteUserByAdmin,
+ usersExportedByAdmin
 }

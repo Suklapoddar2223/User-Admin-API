@@ -9,18 +9,24 @@ const { comparePassword } = require("../helpers/bcryptPassword");
 
 const registerUser = async(req,res)=>{
     try {
-        const {name,email,password,phone}=req.fields;
-        const {image} =req.files;
-       
+        const {name,email,password,phone}=req.body;
+        const {image} =req.file.filename;
+        const isExist = await User.findOne({email: email})
+        if(isExist){
+            return  res.status(400).json({
+                message : "user with this email already exist"
+             })
+                
+        }
 
         if (!name || !email || !password || !phone){
-            return  res.status(404).json({
+            return  res.status(400).json({
                 message : "name,email,phone,password missing"
              })
                 
         };
         if (password.length<6){
-            return  res.status(404).json({
+            return  res.status(400).json({
                 message : "minimum length shold be 6 for password"
              })
                 
@@ -31,14 +37,8 @@ const registerUser = async(req,res)=>{
              })
                 
         }
-
-        const isExist = await User.findOne({email: email})
-        if(isExist){
-            return  res.status(400).json({
-                message : "user with this email already exist"
-             })
-                
-        }
+        
+        
        const hashedPassword = await securePassword(password);
        //store data
        const token = jwt.sign({name,email,phone,hashedPassword,image }, 
@@ -158,7 +158,12 @@ const loginUser =async(req,res)=>{
             message : "user with this email does not exist"
         });
     
-        }
+        };
+        if(user.isBanned){
+            return res.status(401).json({
+                message: "user is banned"
+            });
+        };
     const isPasswordMatched = await comparePassword(password, user.password);
 
     if(!isPasswordMatched){
@@ -242,14 +247,14 @@ const deleteUser = async (req,res)=>{
 const updateUser = async (req,res)=>{
     try {
         //if we have password then need to Hash
-        if(!req.fields.password){
+        if(!req.body.password){
             return  res.status(400).json({
                 message : " password did not match"
                 });
         };
-        const hashedPassword = await securePassword(req.fields.password)
+        const hashedPassword = await securePassword(req.body.password)
        const updatedData = await User.findByIdAndUpdate(req.session.userId,
-        {...req.fields,password:await securePassword(req.fields.password)},
+        {...req.body,password:hashedPassword, image: req.file.filename.image},
         {new: true}
         );
 
@@ -260,11 +265,7 @@ const updateUser = async (req,res)=>{
              
             })
         }
-        if(req.files.image){
-            const {image} = req.files;
-            updatedData.image.data = fs.readFileSync(image.path);
-            updatedData.image.contentType = image.type;
-            }
+       
             await updatedData.save();
 
         res.status(200).json({
