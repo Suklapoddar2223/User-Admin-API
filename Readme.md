@@ -8,7 +8,7 @@ d. create index.js for creating server.
 2. npm init -y
 packeges installed:
 npm install express nodemon dotenv
-further installation neede:
+further installation done:
 morgan mongoose
 in models creating user.js for user profile.
 
@@ -17,3 +17,7 @@ in models creating user.js for user profile.
    . given condition for name,email,passowrd,phone image
    . default condition created like is_admin & is_verified
    . Create controller for users registration res and req. with miidleware formidable
+
+4. Packages downloaded:
+   . cookie-parser
+   . express-session
